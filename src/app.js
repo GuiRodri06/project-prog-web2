@@ -1,49 +1,23 @@
-// Importa o Express, o framework que vai controlar rotas, middlewares, etc.
-const express = require('express');
+import express from "express";
 
-// Cria uma instância da aplicação Express.
-// Pensa nisto como "o objeto principal" da aplicação.
+import db from "./database/database.js"; 
+
+// Importação Nomeada da Rota de Usuário
+import { router as userRoute } from "./routes/userRoute.js";
+
+// Cria o app do express
 const app = express();
 
-// ---------------------------------------------------------------------
-// MIDDLEWARES GLOBAIS
-// Aqui colocamos configurações que afetam todas as rotas da aplicação.
-// ---------------------------------------------------------------------
-
-// Permite tratar JSON no corpo das requisições.
-// Sem isso, req.body seria undefined.
+// Middleware para permitir JSON nas requisições
 app.use(express.json());
 
-// Aqui poderíamos colocar outro middlewares, por exemplo:
-// - CORS
-// - logs de requisição
-// - validações globais
-// - tratamento de erros
-//
-// Exemplo (comentado por agora):
-// const cors = require('cors');
-// app.use(cors());
+// Define grupo de rotas
+app.use("/users", userRoute);
 
-// ---------------------------------------------------------------------
-// ROTAS DA APLICAÇÃO
-// Cada conjunto de rotas fica num ficheiro separado.
-// Aqui apenas "montamos" as rotas no app.
-// ---------------------------------------------------------------------
+// Rota de teste só pra ver se está vivo
+app.get("/", (req, res) => {
+    res.send("API está rodando!");
+});
 
-// Importa rotas de exemplo
-const userRoutes = require('./routes/users');
-
-// Todas as rotas que começam com /users vão para userRoutes.
-// Ex.: GET /users → users.js
-app.use('/users', userRoutes);
-
-// Se quiseres, poderás ir adicionando outras rotas aqui:
-// app.use('/auth', require('./routes/auth'));
-// app.use('/posts', require('./routes/posts'));
-
-// ---------------------------------------------------------------------
-// EXPORTAÇÃO
-// Exportamos o app já configurado.
-// O server.js só precisa "usar" esta aplicação e iniciar o servidor.
-// ---------------------------------------------------------------------
-module.exports = app;
+// Exporta o app pro server.js usar
+export default app;
