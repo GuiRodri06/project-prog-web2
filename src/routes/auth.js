@@ -3,12 +3,11 @@
 import express from "express";
 import path from "path"; 
 import authController from "../controllers/authController.js";
+import userController from "../controllers/userController.js";
 
 const router = express.Router();
 
-// Função auxiliar para servir um arquivo HTML da pasta public/templates
 const serveTemplate = (filename) => (req, res) => {
-    // caminho: RAÍZ/public/templates/[filename]
     res.sendFile(path.resolve('public', 'templates', filename));
 };
 
@@ -28,5 +27,11 @@ router.get("/logout", authController.logout);
 
 // POST /login: Processa a submissão do formulário
 router.post("/login", authController.login);
+
+// GET /register - Exibe o formulário de cadastro
+router.get("/register", serveTemplate('register.html'));
+
+// 🛑 MUDANÇA AQUI: POST /register AGORA APONTA PARA userController
+router.post("/register", userController.register); // 'register' é o nome que exportamos
 
 export { router };

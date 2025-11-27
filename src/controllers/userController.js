@@ -39,23 +39,43 @@ const getUserById = async (req, res) => {
  * Cria um novo usuário.
  */
 const createUser = async (req, res) => {
-    const newUser = req.body; // Dados do usuário vêm no corpo da requisição
+    // 1. Extrai os dados do formulário (usando req.body do POST /register)
+    const { name, email, password, number, nif } = req.body; 
 
-    // Validação básica (idealmente, mais robusta)
-    if (!newUser.email || !newUser.password || !newUser.name) {
-        return res.status(400).json({ message: "Nome, email e senha são obrigatórios." });
+    if (!name || !email || !password) {
+        return res.status(400).send("Dados obrigatórios faltando."); // Em produção, redirecionar com erro
     }
 
     try {
+        // 2. Verifica se o usuário já existe
+        const existingUser = await UserModel.findByEmail(email);
+        if (existingUser) {
+            console.log(`Tentativa de cadastro falhou: Email já existe: ${email}`);
+            return res.status(409).send("Email já cadastrado."); // 409 Conflict
+        }
+
+        // 3. Cria o objeto do novo usuário
+        const newUser = {
+            name,
+            password, 
+            email,
+            number: number || null,
+            nif: nif || null,
+            role: 'client' // 🛑 Define o papel padrão como cliente
+        };
+
+        // 4. Cria o usuário no banco de dados
         const newId = await UserModel.create(newUser);
-        res.status(201).json({ 
-            message: "Usuário criado com sucesso.", 
-            id: newId, 
-            user: newUser 
-        });
+        
+        console.log(`Novo cliente cadastrado com sucesso! ID: ${newId}`);
+        
+        // 5. Redireciona para o login (ou retorna sucesso JSON para API)
+        // Como a requisição vem de um formulário, redirecionar é o ideal.
+        return res.redirect("/login"); 
+
     } catch (error) {
-        console.error("Erro ao criar usuário:", error.message);
-        res.status(500).json({ message: "Erro interno do servidor ao criar usuário." });
+        console.error("Erro durante o processo de cadastro/criação:", error);
+        return res.status(500).send("Erro interno ao criar usuário.");
     }
 };
 
@@ -76,7 +96,7 @@ const updateUser = async (req, res) => {
 };
 
 /**
- * Remove um usuário.
+ * Deleta um usuário existente.
  */
 const deleteUser = async (req, res) => {
     const { id } = req.params;
@@ -95,6 +115,7 @@ export default {
     getAllUsers,
     getUserById,
     createUser,
+    register: createUser,
     updateUser,
     deleteUser
 };
