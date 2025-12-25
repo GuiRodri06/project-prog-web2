@@ -30,8 +30,8 @@ app.use("/", authRoute); // Rota base para autenticação (ex: /login)
 
 // Rota padrão
 app.get("/", (req, res) => {
-    // Redireciona para o arquivo login.html dentro da pasta 'public'
-    res.redirect("/templates/index.html");
+    // res.sendFile envia o conteúdo do arquivo, mas mantém a URL como "/"
+    res.sendFile(path.resolve('public', 'templates', 'index.html'));
 });
 
 // Exporta o app pro server.js usar

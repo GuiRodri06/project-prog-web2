@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Outcast Skate Shop</title>
+    <title>Cadastro - Outcast Skate Shop</title>
     <style>
         body {
             font-family: sans-serif;
@@ -16,7 +16,7 @@
             background-color: #f4f4f4;
         }
 
-        .login-box {
+        .register-box {
             background: white;
             padding: 30px;
             border-radius: 8px;
@@ -30,19 +30,19 @@
             color: #333;
         }
 
-        input[type="text"],
-        input[type="password"] {
+        input {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
+            margin: 8px 0;
             display: inline-block;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Garante que o padding não aumente a largura */
+            box-sizing: border-box;
         }
 
         button {
-            background-color: #007bff;
+            background-color: #28a745;
+            /* Cor verde para cadastro */
             color: white;
             padding: 14px 20px;
             margin: 15px 0;
@@ -55,7 +55,7 @@
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
 
         .options {
@@ -69,38 +69,46 @@
             text-decoration: none;
             font-weight: bold;
         }
-
-        .options a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 
 <body>
 
-    <div class="login-box">
-        <h2>Acesso à Conta</h2>
+    <div class="register-box">
+        <h2>Criar Nova Conta</h2>
 
-        <form action="/login" method="POST">
+        <form action="/register" method="POST">
             <div style="text-align: left;">
-                <label for="username">Email:</label>
-                <input type="text" id="username" name="username" placeholder="seu@email.com" required>
+                <label for="name">Nome Completo:</label>
+                <input type="text" id="name" name="name" placeholder="Como quer ser chamado?" required>
             </div>
-            
+
+            <div style="text-align: left;">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+            </div>
+
             <div style="text-align: left;">
                 <label for="password">Senha:</label>
-                <input type="password" id="password" name="password" placeholder="Sua senha" required>
+                <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
             </div>
 
-            <button type="submit">Entrar</button>
+            <div style="text-align: left;">
+                <label for="number">Telefone (Opcional):</label>
+                <input type="text" id="number" name="number" placeholder="Ex: 912345678">
+            </div>
+
+            <div style="text-align: left;">
+                <label for="nif">NIF (Opcional):</label>
+                <input type="text" id="nif" name="nif" placeholder="Ex: 123456789">
+            </div>
+
+            <button type="submit">Finalizar Cadastro</button>
         </form>
 
         <div class="options">
-            <p>Ainda não tem uma conta? <br>
-                <a href="/register">Cadastre-se aqui</a>
-            </p>
-            <p style="margin-top: 10px;">
-                <a href="/" style="color: #666; font-weight: normal;">← Voltar para a loja</a>
+            <p>Já possui uma conta? <br>
+                <a href="/login">Fazer Login agora</a>
             </p>
         </div>
     </div>
