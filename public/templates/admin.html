@@ -1,23 +1,89 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Painel Administrativo - Outcast</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; background: #f4f7f6; }
-        .sidebar { width: 250px; height: 100vh; background: #333; color: white; padding: 20px; position: fixed; }
-        .main-content { margin-left: 250px; padding: 40px; width: 100%; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #007bff; color: white; }
-        .btn { padding: 8px 15px; border-radius: 4px; text-decoration: none; color: white; font-weight: bold; }
-        .btn-add { background: #28a745; }
-        .btn-edit { background: #ffc107; color: #333; margin-right: 5px; }
-        .btn-delete { background: #dc3545; }
-        .btn-logout { background: #6c757d; font-size: 0.8em; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            background: #f4f7f6;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #333;
+            color: white;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 40px;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            background: #28a745;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        .btn-logout {
+            background: #6c757d;
+            font-size: 0.8em;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="sidebar">
@@ -26,8 +92,10 @@
         <hr>
         <nav>
             <ul style="list-style: none; padding: 0;">
-                <li style="margin: 20px 0;"><a href="/admin" style="color: white; text-decoration: none;">📦 Produtos</a></li>
-                <li style="margin: 20px 0;"><a href="#" style="color: #888; text-decoration: none;">🛒 Encomendas (Brevemente)</a></li>
+                <li style="margin: 20px 0;"><a href="/admin" style="color: white; text-decoration: none;">📦
+                        Produtos</a></li>
+                <li style="margin: 20px 0;"><a href="#" style="color: #888; text-decoration: none;">🛒 Encomendas
+                        (Brevemente)</a></li>
             </ul>
         </nav>
         <a href="/logout" class="btn btn-logout">Sair</a>
@@ -58,17 +126,39 @@
         </table>
     </div>
 
+    <div id="editModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:8px; width:400px;">
+            <h3>Editar Produto</h3>
+            <form id="editForm">
+                <input type="hidden" id="edit-id">
+                <label>Nome:</label>
+                <input type="text" id="edit-name" style="width:100%; margin-bottom:10px;">
+                <label>Preço:</label>
+                <input type="number" id="edit-price" step="0.01" style="width:100%; margin-bottom:10px;">
+                <label>Categoria:</label>
+                <select id="edit-category" style="width:100%; margin-bottom:20px;"></select>
+                <label>Quantidade em Stock:</label>
+                <input type="number" id="edit-quantity" style="width:100%; margin-bottom:10px;">
+
+                <button type="submit" class="btn btn-add">Salvar Alterações</button>
+                <button type="button" onclick="document.getElementById('editModal').style.display='none'"
+                    class="btn btn-logout">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-    fetch('/api/products')
-        .then(res => res.json())
-        .then(products => {
-            const tbody = document.getElementById('product-list');
-            if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum produto em stock.</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = products.map(p => `
+        fetch('/api/products')
+            .then(res => res.json())
+            .then(products => {
+                const tbody = document.getElementById('product-list');
+                if (products.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum produto em stock.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = products.map(p => `
                 <tr>
                     <td>${p.idProduct}</td>
                     <td>${p.name}</td>
@@ -76,12 +166,76 @@
                     <td>${p.price.toFixed(2)}€</td>
                     <td>${p.quantity}</td>
                     <td>
-                        <a href="#" class="btn btn-edit">Editar</a>
-                        <a href="#" class="btn btn-delete">Apagar</a>
+                        <button onclick="editarProduto(${p.idProduct})" class="btn btn-edit">Editar</button>
+                        <button onclick="apagarProduto(${p.idProduct})" class="btn btn-delete">Apagar</button>
                     </td>
                 </tr>
             `).join('');
-        });
-</script>
+            });
+
+        function apagarProduto(id) {
+            if (confirm("Tens a certeza que queres eliminar este produto?")) {
+                fetch(`/api/products/${id}`, { method: 'DELETE' })
+                    .then(res => {
+                        if (res.ok) {
+                            alert("Produto e Stock eliminados!");
+                            location.reload(); // Atualiza a lista na tela
+                        }
+                    });
+            }
+        }
+
+        async function editarProduto(id) {
+            const response = await fetch(`/api/products/${id}`);
+            const p = await response.json();
+
+            document.getElementById('edit-id').value = p.idProduct;
+            document.getElementById('edit-name').value = p.name;
+            document.getElementById('edit-price').value = p.price;
+            document.getElementById('edit-quantity').value = p.quantity; // Preenche o stock
+
+            // Carrega categorias
+            const catRes = await fetch('/api/products/categories');
+            const categorias = await catRes.json();
+            const select = document.getElementById('edit-category');
+            select.innerHTML = categorias.map(c =>
+                `<option value="${c.idCategory}" ${c.idCategory === p.idCategory ? 'selected' : ''}>${c.type}</option>`
+            ).join('');
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        document.getElementById('editForm').onsubmit = async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const data = {
+                name: document.getElementById('edit-name').value,
+                price: parseFloat(document.getElementById('edit-price').value),
+                idCategory: parseInt(document.getElementById('edit-category').value),
+                quantity: parseInt(document.getElementById('edit-quantity').value)
+            };
+
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Produto atualizado com sucesso!");
+                    location.reload();
+                } else {
+                    const error = await response.json();
+                    alert("Erro: " + error.error);
+                }
+            } catch (err) {
+                console.error("Erro no fetch:", err);
+                alert("Erro de conexão com o servidor.");
+            }
+        };
+    </script>
 </body>
+
 </html>

@@ -22,4 +22,14 @@ const listProducts = async (req, res) => {
     }
 };
 
-export default { createProduct, listProducts };
+const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await ProductModel.delete(id);
+        res.json({ message: "Produto removido com sucesso!" });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao apagar produto." });
+    }
+};
+
+export default { createProduct, listProducts, deleteProduct };
