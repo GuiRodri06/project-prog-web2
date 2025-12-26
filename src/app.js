@@ -1,6 +1,7 @@
 // src/app.js
 
 import express from "express";
+import session from 'express-session';
 import path from "path"; // Mantenha o path para caminhos absolutos
 
 import db from "./database/database.js"; 
@@ -11,6 +12,13 @@ import { router as authRoute } from "./routes/auth.js";
 
 // Cria o app do express
 const app = express();
+
+app.use(session({
+    secret: 'outcast123', // Mude para algo aleatório
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Em produção com HTTPS, seria true
+}));
 
 // --- NOVO: Configuração para servir arquivos estáticos ---
 // A pasta 'public' (onde está login.html) será servida diretamente.

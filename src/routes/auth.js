@@ -4,6 +4,7 @@ import express from "express";
 import path from "path"; 
 import authController from "../controllers/authController.js";
 import userController from "../controllers/userController.js";
+import { isAuthenticated, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -14,13 +15,12 @@ const serveTemplate = (filename) => (req, res) => {
 // GET /login: Exibe o formulário de login
 router.get("/login", serveTemplate('login.html'));
 
-// GET /admin: Exibe a página do Administrador
-// NOTA: Esta rota deve ser protegida por um middleware em um projeto real.
-router.get("/admin", serveTemplate('admin.html')); 
+// Rota de Admin: agora com o middleware isAdmin
+// O Express vai rodar 'isAdmin' primeiro. Se der OK, ele executa o 'serveTemplate'
+router.get("/admin", isAdmin, serveTemplate('admin.html')); 
 
-// GET /client: Exibe a página do Cliente
-// NOTA: Esta rota também deve ser protegida.
-router.get("/client", serveTemplate('client.html'));
+// Rota de Cliente: agora com o middleware isAuthenticated
+router.get("/client", isAuthenticated, serveTemplate('client.html'));
 
 // GET /logout: Lógica para sair da conta
 router.get("/logout", authController.logout);

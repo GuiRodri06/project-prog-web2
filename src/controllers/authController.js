@@ -3,11 +3,10 @@
 import UserModel from "../models/userModel.js";
 
 const login = async (req, res) => {
-    
     const { username, password } = req.body; 
 
     if (!username || !password) {
-        return res.redirect("/login"); // Redireciona para o GET /login
+        return res.redirect("/login");
     }
 
     try {
@@ -16,19 +15,24 @@ const login = async (req, res) => {
         // Se o usuário não for encontrado OU a senha estiver incorreta
         if (!user || password !== user.password) {
             console.log(`Login falhou: Credenciais inválidas para ${username}`);
-            // Volta para a página de login
             return res.redirect("/login"); 
         }
         
-        // Sucesso: Login válido!
-        console.log(`Login bem-sucedido para: ${user.email} (Role: ${user.role})`);
+        // LOGIN VÁLIDO
+        // Criamos o objeto na sessão para que os middlewares (isAuthenticated/isAdmin) possam ler
+        req.session.user = {
+            id: user.idUser,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        };
+
+        console.log(`Sessão criada para: ${user.email} (Role: ${user.role})`);
         
-        // 🛑 LÓGICA DE REDIRECIONAMENTO POR PAPEL (ROLE)
+        // Redirecionamento baseado no papel
         if (user.role === 'admin') {
-            // Se for administrador, vai para a página de admin
             return res.redirect("/admin"); 
         } else {
-            // Se for qualquer outra coisa (cliente, default), vai para a página de cliente
             return res.redirect("/client");
         }
 
@@ -39,12 +43,19 @@ const login = async (req, res) => {
 };
 
 /**
- * Lógica para Logout (simples, apenas redireciona)
+ * Lógica para Logout 
  */
 const logout = (req, res) => {
-    // Em um projeto real, aqui você destruiria a sessão.
-    console.log("Usuário deslogado.");
-    res.redirect("/login"); // Volta para o formulário de login
+    // ✅ Agora destruímos a sessão de verdade
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Erro ao destruir sessão:", err);
+            return res.redirect("/");
+        }
+        console.log("Usuário deslogado e sessão destruída.");
+        res.clearCookie('connect.sid'); // Limpa o cookie no navegador
+        res.redirect("/login");
+    });
 };
 
 export default {
