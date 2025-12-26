@@ -25,16 +25,48 @@ router.get("/categories", (req, res) => {
     });
 });
 
-// Rota para buscar um único produto (incluindo stock para o formulário)
-router.get("/:id", isAdmin, (req, res) => {
+// Rota para a Vitrine (Pública - sem o middleware isAdmin)
+router.get("/store/all", (req, res) => {
     const query = `
-        SELECT p.*, s.quantity 
+        SELECT p.*, s.quantity, c.type as categoryName 
         FROM Product p 
         JOIN Stock s ON p.idProduct = s.idProduct 
-        WHERE p.idProduct = ?`;
-        
-    db.get(query, [req.params.id], (err, row) => {
+        JOIN Category c ON p.idCategory = c.idCategory
+        WHERE s.quantity > 0`; // Só mostra o que tem stock
+
+    db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Usamos PATCH pois estamos a alterar apenas uma parte do recurso (o stock)
+router.patch("/buy/:id", async (req, res) => {
+    const { id } = req.params;
+    const { quantidade } = req.body;
+
+    const query = `UPDATE Stock SET quantity = quantity - ? WHERE idProduct = ? AND quantity >= ?`;
+    
+    db.run(query, [quantidade, id, quantidade], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(400).json({ error: "Stock insuficiente!" });
+        res.json({ message: "Stock atualizado!" });
+    });
+});
+
+// Rota para buscar um único produto (incluindo stock para o formulário)
+router.get("/:id", (req, res) => {
+    const { id } = req.params;
+    const query = `
+        SELECT p.*, s.quantity, c.type as categoryName 
+        FROM Product p 
+        JOIN Stock s ON p.idProduct = s.idProduct 
+        JOIN Category c ON p.idCategory = c.idCategory
+        WHERE p.idProduct = ?`;
+
+    db.get(query, [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ message: "Produto não encontrado" });
         res.json(row);
     });
 });
