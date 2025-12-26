@@ -2,19 +2,86 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin</title>
+    <title>Painel Administrativo - Outcast</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; background-color: #fff3e0; }
-        h1 { color: #e65100; }
-        .btn-logout { background-color: #f44336; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; }
-        .warning { color: red; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; background: #f4f7f6; }
+        .sidebar { width: 250px; height: 100vh; background: #333; color: white; padding: 20px; position: fixed; }
+        .main-content { margin-left: 250px; padding: 40px; width: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #007bff; color: white; }
+        .btn { padding: 8px 15px; border-radius: 4px; text-decoration: none; color: white; font-weight: bold; }
+        .btn-add { background: #28a745; }
+        .btn-edit { background: #ffc107; color: #333; margin-right: 5px; }
+        .btn-delete { background: #dc3545; }
+        .btn-logout { background: #6c757d; font-size: 0.8em; }
     </style>
 </head>
 <body>
-    <h1>Dashboard do Administrador</h1>
-    <p class="warning">Cuidado! Você está na área de gestão do sistema (CRUD de produtos, usuários, etc.).</p>
-    <p>Link para gerenciar Produtos | Link para gerenciar Usuários...</p>
-    <a href="/logout" class="btn-logout">Sair</a>
+
+    <div class="sidebar">
+        <h2>Outcast Shop</h2>
+        <p>Olá, Administrador</p>
+        <hr>
+        <nav>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin: 20px 0;"><a href="/admin" style="color: white; text-decoration: none;">📦 Produtos</a></li>
+                <li style="margin: 20px 0;"><a href="#" style="color: #888; text-decoration: none;">🛒 Encomendas (Brevemente)</a></li>
+            </ul>
+        </nav>
+        <a href="/logout" class="btn btn-logout">Sair</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Gestão de Inventário</h1>
+            <a href="/admin/add-product" class="btn btn-add">+ Novo Produto</a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Stock</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="product-list">
+                <tr>
+                    <td colspan="6" style="text-align: center;">Carregando produtos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+    fetch('/api/products')
+        .then(res => res.json())
+        .then(products => {
+            const tbody = document.getElementById('product-list');
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum produto em stock.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td>${p.idProduct}</td>
+                    <td>${p.name}</td>
+                    <td>${p.category}</td>
+                    <td>${p.price.toFixed(2)}€</td>
+                    <td>${p.quantity}</td>
+                    <td>
+                        <a href="#" class="btn btn-edit">Editar</a>
+                        <a href="#" class="btn btn-delete">Apagar</a>
+                    </td>
+                </tr>
+            `).join('');
+        });
+</script>
 </body>
 </html>

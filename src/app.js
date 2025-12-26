@@ -2,45 +2,51 @@
 
 import express from "express";
 import session from 'express-session';
-import path from "path"; // Mantenha o path para caminhos absolutos
+import path from "path"; 
 
+// Importa a conexão do banco (garante que o seed rode ao iniciar)
 import db from "./database/database.js"; 
 
 // Importa as Rotas
 import { router as userRoute } from "./routes/user.js";
 import { router as authRoute } from "./routes/auth.js"; 
+import { router as productRoutes } from "./routes/product.js"; 
 
-// Cria o app do express
 const app = express();
 
+// Configuração da Sessão 
 app.use(session({
-    secret: 'outcast123', // Mude para algo aleatório
+    secret: 'outcast123', 
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Em produção com HTTPS, seria true
+    cookie: { 
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24 // 1 dia de duração
+    }
 }));
 
-// --- NOVO: Configuração para servir arquivos estáticos ---
-// A pasta 'public' (onde está login.html) será servida diretamente.
-// O __dirname pode não funcionar em ES Modules. Use path.resolve() para garantir o caminho.
+// Servir arquivos estáticos (CSS, Imagens, JS do front)
 app.use(express.static(path.resolve('public')));
-// --------------------------------------------------------
 
-// Middleware para permitir JSON nas requisições
+// Middlewares para ler dados das requisições
 app.use(express.json());
-
-// Middleware para lidar com dados de formulário (url-encoded)
 app.use(express.urlencoded({ extended: true })); 
 
-// Define grupo de rotas
-app.use("/users", userRoute);
-app.use("/", authRoute); // Rota base para autenticação (ex: /login)
+// --- DEFINIÇÃO DAS ROTAS ---
 
-// Rota padrão
+// Rotas de Usuários (ex: /users/register)
+app.use("/users", userRoute);
+
+// Rotas de Autenticação e Páginas (ex: /login, /admin, /logout)
+app.use("/", authRoute); 
+
+// Rotas de API de Produtos (ex: GET /api/products ou POST /api/products)
+// O prefixo "/api/products" ajuda a organizar o que é busca de dados
+app.use("/api/products", productRoutes); // << ADICIONADO
+
+// Rota padrão (Home da Loja)
 app.get("/", (req, res) => {
-    // res.sendFile envia o conteúdo do arquivo, mas mantém a URL como "/"
     res.sendFile(path.resolve('public', 'templates', 'index.html'));
 });
 
-// Exporta o app pro server.js usar
 export default app;

@@ -1,18 +1,25 @@
 // src/routes/products.js
-
 import express from "express";
+import db from "../database/database.js";
 import productController from "../controllers/productController.js";
+import { isAdmin } from "../middlewares/authMiddleware.js"; // Importa a proteção
 
 const router = express.Router();
 
-// 1. [ADMIN] Rota para Adicionar um Novo Produto e Stock
-// Exemplo: POST /products
-router.post("/", productController.addProductAndStock);
+// [ADMIN] - Só o admin pode criar produtos
+router.post("/", isAdmin, productController.createProduct); 
 
-// 2. [PÚBLICO] Rota para Listar todos os produtos (Loja)
-// Exemplo: GET /products
-router.get("/", productController.getAllProducts);
+// [PÚBLICO/ADMIN] - Ver produtos
+router.get("/", productController.listProducts);
 
-// ... Outras rotas (PUT /products/:id, DELETE /products/:id)
+router.get("/categories", (req, res) => {
+    db.all("SELECT * FROM Category ORDER BY type ASC", [], (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Erro ao buscar categorias" });
+        }
+        res.json(rows); // Deve retornar a lista de categorias
+    });
+});
 
 export { router };
