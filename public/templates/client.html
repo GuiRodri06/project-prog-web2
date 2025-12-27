@@ -46,7 +46,6 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
-        /* Formulário de Perfil */
         .profile-form label {
             display: block;
             margin-bottom: 8px;
@@ -70,9 +69,11 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
         }
 
-        /* Carrinho */
+        .btn-save:hover { background: #333; }
+
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -95,9 +96,7 @@
         }
 
         @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+            .container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -126,10 +125,10 @@
                 <input type="text" id="user-nif" placeholder="Ex: 123456789">
 
                 <label>E-mail (Não alterável)</label>
-                <input type="email" id="user-email" readonly style="background:#eee;">
+                <input type="email" id="user-email" readonly style="background:#eee; cursor: not-allowed;">
 
                 <label>Nova Password (Opcional)</label>
-                <input type="password" id="user-pw" placeholder="Deixe vazio para não alterar">
+                <input type="password" id="user-pw" placeholder="Deixe vazio para manter a atual">
 
                 <button type="submit" class="btn-save">GRAVAR ALTERAÇÕES</button>
             </form>
@@ -137,8 +136,7 @@
 
         <div class="card">
             <h3>🛒 Teu Carrinho</h3>
-            <div id="cart-list">
-            </div>
+            <div id="cart-list"></div>
 
             <div style="margin-top: 25px; border-top: 2px solid var(--light); padding-top: 20px;">
                 <div style="display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: bold;">
@@ -158,17 +156,23 @@
             atualizarCarrinhoUI();
         });
 
+        // 1. CARREGAR DADOS DO PERFIL (Via UserController)
         async function carregarDadosUsuario() {
-            const res = await fetch('/api/user-data');
-            const user = await res.json();
-            if (res.ok) {
+            try {
+                const res = await fetch('/users/profile-data'); // Rota correta no teu user.js
+                if (!res.ok) throw new Error("Erro ao carregar dados");
+                
+                const user = await res.json();
                 document.getElementById('user-name').value = user.name || "";
                 document.getElementById('user-email').value = user.email || "";
                 document.getElementById('user-number').value = user.number || "";
                 document.getElementById('user-nif').value = user.nif || "";
+            } catch (err) {
+                console.error(err);
             }
         }
 
+        // 2. SALVAR DADOS DO PERFIL
         document.getElementById('profile-form').onsubmit = async (e) => {
             e.preventDefault();
 
@@ -180,7 +184,7 @@
             };
 
             try {
-                const response = await fetch('/api/update-profile', {
+                const response = await fetch('/users/update-profile', { // Rota correta no teu user.js
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
@@ -189,18 +193,17 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(result.message);
-                    document.getElementById('user-pw').value = ""; // Limpa o campo de senha
+                    alert(result.message || "Perfil atualizado com sucesso!");
+                    document.getElementById('user-pw').value = ""; 
                 } else {
-                    alert("Erro: " + result.error);
+                    alert("Erro: " + (result.error || result.message));
                 }
             } catch (error) {
-                console.error("Erro ao salvar:", error);
                 alert("Falha na comunicação com o servidor.");
             }
         };
 
-        // Atualizar UI do Carrinho (igual à Home)
+        // 3. LOGICA DO CARRINHO (Sincronizada)
         function atualizarCarrinhoUI() {
             const list = document.getElementById('cart-list');
             const totalDisplay = document.getElementById('total-price');
@@ -239,26 +242,22 @@
         async function finalizarCompra() {
             if (!confirm("Confirmar compra?")) return;
 
-            for (const item of carrinho) {
-                await fetch(`/api/products/buy/${item.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantidade: item.qtd })
-                });
+            try {
+                for (const item of carrinho) {
+                    await fetch(`/api/products/buy/${item.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quantidade: item.qtd })
+                    });
+                }
+                alert("Pedido realizado com sucesso!");
+                carrinho = [];
+                localStorage.removeItem('outcast_cart');
+                window.location.href = "/";
+            } catch (err) {
+                alert("Erro ao processar compra.");
             }
-
-            alert("Pedido realizado com sucesso!");
-            carrinho = [];
-            localStorage.removeItem('outcast_cart');
-            window.location.href = "/"; // Volta para a loja
         }
-
-        // Lógica de atualizar perfil (Opcional - precisarias de uma rota POST no servidor)
-        document.getElementById('profile-form').onsubmit = async (e) => {
-            e.preventDefault();
-            alert("Perfil atualizado localmente! (Adiciona a rota /api/update-user no servidor para salvar permanentemente)");
-        };
     </script>
 </body>
-
 </html>

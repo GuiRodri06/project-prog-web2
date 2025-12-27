@@ -110,6 +110,41 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const getProfile = async (req, res) => {
+    try {
+        const id = req.session.user.id;
+        const user = await UserModel.getById(id);
+        if (!user) return res.status(404).json({ message: "Usuário não encontrado." });
+        
+        // Remove a password antes de enviar para o front por segurança
+        const { password, ...safeUserData } = user;
+        res.status(200).json(safeUserData);
+    } catch (error) {
+        res.status(500).json({ message: "Erro ao buscar perfil." });
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const id = req.session.user.id;
+        const { name, number, nif, password } = req.body;
+        
+        // Criamos um objeto apenas com o que o cliente pode editar
+        const updateData = { name, number, nif };
+        
+        // Só incluímos a password se ela for preenchida no formulário
+        if (password && password.trim() !== "") {
+            updateData.password = password;
+        }
+
+        await UserModel.update(id, updateData);
+        res.status(200).json({ message: "Perfil atualizado com sucesso!" });
+    } catch (error) {
+        console.error("Erro no Controller:", error);
+        res.status(500).json({ message: "Erro ao atualizar perfil." });
+    }
+};
+
 
 export default {
     getAllUsers,
@@ -117,5 +152,7 @@ export default {
     createUser,
     register: createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getProfile,    
+    updateProfile  
 };

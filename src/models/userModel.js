@@ -90,22 +90,30 @@ class UserModel {
     }
 
     /**
-     * Atualiza um usuário existente.
+     * Atualiza um usuário existente de forma dinâmica.
      * @param {number} id
-     * @param {Object} user - Novos dados do usuário.
+     * @param {Object} user - Novos dados do usuário (apenas os campos a alterar).
      * @returns {Promise<void>}
      */
     static update(id, user) {
         return new Promise((resolve, reject) => {
-            const query = `
-                UPDATE User
-                SET name = ?, password = ?, email = ?, number = ?, nif = ?, role = ?
-                WHERE idUser = ?;
-            `;
-            const params = [user.name, user.password, user.email, user.number, user.nif, user.role, id];
+            // 1. Pegar as chaves do objeto (ex: ["name", "number"])
+            const fields = Object.keys(user);
+            if (fields.length === 0) return resolve(); // Nada para atualizar
 
-            db.run(query, params, (err) => {
-                if (err) return reject(err);
+            // 2. Montar a string: "name = ?, number = ?"
+            const setClause = fields.map(field => `${field} = ?`).join(", ");
+            
+            // 3. Montar o array de valores + o ID no final para o WHERE
+            const params = [...Object.values(user), id];
+
+            const query = `UPDATE User SET ${setClause} WHERE idUser = ?;`;
+
+            db.run(query, params, function(err) {
+                if (err) {
+                    console.error("Erro SQL no update:", err.message);
+                    return reject(err);
+                }
                 resolve();
             });
         });

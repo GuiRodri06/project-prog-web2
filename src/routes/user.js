@@ -6,15 +6,22 @@ import { isAuthenticated } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // 1. Rota para registrar novo usuário (POST /users/register)
-// Esta rota é chamada pelo formulário de cadastro
 router.post("/register", userController.register);
 
-// 2. Rota para o usuário ver o próprio perfil (GET /users/profile)
-// Exemplo de como usar o middleware para proteger dados do próprio usuário
+// 2. Rota para buscar os dados completos da BD (Nome, E-mail, NIF, Telemóvel)
+// O client.html chamará: fetch('/users/profile-data')
+router.get("/profile-data", isAuthenticated, userController.getProfile);
+
+// 3. Rota para atualizar os dados (Nome, NIF, Telemóvel e Password)
+// O client.html chamará: fetch('/users/update-profile', { method: 'POST', ... })
+router.post("/update-profile", isAuthenticated, userController.updateProfile);
+
+
+// Rota antiga de exemplo (podes manter ou remover se usares a /profile-data)
 router.get("/profile", isAuthenticated, (req, res) => {
     res.json({
-        message: "Dados do seu perfil",
-        user: req.session.user // Pega os dados da sessão que criamos no login
+        message: "Dados da sessão",
+        user: req.session.user 
     });
 });
 
