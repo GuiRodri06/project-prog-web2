@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Outcast Skate Shop</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .register-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #28a745;
+            /* Cor verde para cadastro */
+            color: white;
+            padding: 14px 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .options {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .options a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-box">
+        <h2>Criar Nova Conta</h2>
+
+        <form action="/users/register" method="POST">
+            <div style="text-align: left;">
+                <label for="name">Nome Completo:</label>
+                <input type="text" id="name" name="name" placeholder="Como quer ser chamado?" required>
+            </div>
+
+            <div style="text-align: left;">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+            </div>
+
+            <div style="text-align: left;">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+            </div>
+
+            <div style="text-align: left;">
+                <label for="number">Telefone (Opcional):</label>
+                <input type="text" id="number" name="number" placeholder="Ex: 912345678">
+            </div>
+
+            <div style="text-align: left;">
+                <label for="nif">NIF (Opcional):</label>
+                <input type="text" id="nif" name="nif" placeholder="Ex: 123456789">
+            </div>
+
+            <button type="submit">Finalizar Cadastro</button>
+        </form>
+
+        <div class="options">
+            <p>Já possui uma conta? <br>
+                <a href="/login">Fazer Login agora</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,23 +1,48 @@
+// src/app.js
 import express from "express";
+import session from 'express-session';
+import path from "path"; 
 
 import db from "./database/database.js"; 
 
-// Importação Nomeada da Rota de Usuário
-import { router as userRoute } from "./routes/userRoute.js";
+import { router as userRoute } from "./routes/user.js";
+import { router as authRoute } from "./routes/auth.js"; 
+import { router as productRoutes } from "./routes/product.js"; 
 
-// Cria o app do express
 const app = express();
 
-// Middleware para permitir JSON nas requisições
+app.use(session({
+    secret: 'outcast123', 
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24 
+    }
+}));
+
+app.use(express.static(path.resolve('public')));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); 
 
-// Define grupo de rotas
+// --- DEFINIÇÃO DAS ROTAS ---
+
 app.use("/users", userRoute);
+app.use("/", authRoute); 
+app.use("/api/products", productRoutes);
 
-// Rota de teste só pra ver se está vivo
-app.get("/", (req, res) => {
-    res.send("API está rodando!");
+// --- ROTAS DE PÁGINAS (USAR 'app' EM VEZ DE 'router') ---
+app.get("/register", (req, res) => {
+    res.sendFile(path.resolve('public', 'templates', 'register.html'));
 });
 
-// Exporta o app pro server.js usar
+app.get("/", (req, res) => {
+    res.sendFile(path.resolve('public', 'templates', 'index.html'));
+});
+
+// Caso tenhas uma página de login separada:
+app.get("/login", (req, res) => {
+    res.sendFile(path.resolve('public', 'login.html'));
+});
+
 export default app;

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil | Outcast Skate Shop</title>
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #ff4500;
+            --success: #2ecc71;
+            --light: #f4f4f4;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .profile-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-save:hover { background: #333; }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-checkout {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 18px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1 onclick="window.location.href='/'" style="cursor:pointer;">OUTCAST 🛹</h1>
+        <nav>
+            <a href="/" style="color:white; text-decoration:none; font-weight:bold;">Voltar à Loja</a>
+            <a href="/logout" style="color:var(--accent); text-decoration:none; margin-left:20px;">Sair</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Os Meus Dados</h2>
+            <form id="profile-form" class="profile-form">
+                <label>Nome Completo</label>
+                <input type="text" id="user-name" required>
+
+                <label>Telemóvel / Número</label>
+                <input type="text" id="user-number" placeholder="Ex: 912345678">
+
+                <label>NIF (Número de Contribuinte)</label>
+                <input type="text" id="user-nif" placeholder="Ex: 123456789">
+
+                <label>E-mail (Não alterável)</label>
+                <input type="email" id="user-email" readonly style="background:#eee; cursor: not-allowed;">
+
+                <label>Nova Password (Opcional)</label>
+                <input type="password" id="user-pw" placeholder="Deixe vazio para manter a atual">
+
+                <button type="submit" class="btn-save">GRAVAR ALTERAÇÕES</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>🛒 Teu Carrinho</h3>
+            <div id="cart-list"></div>
+
+            <div style="margin-top: 25px; border-top: 2px solid var(--light); padding-top: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: bold;">
+                    <span>Total:</span>
+                    <span id="total-price">0.00€</span>
+                </div>
+                <button class="btn-checkout" id="btn-finish" onclick="finalizarCompra()">FINALIZAR PEDIDO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carrinho = JSON.parse(localStorage.getItem('outcast_cart')) || [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDadosUsuario();
+            atualizarCarrinhoUI();
+        });
+
+        // 1. CARREGAR DADOS DO PERFIL (Via UserController)
+        async function carregarDadosUsuario() {
+            try {
+                const res = await fetch('/users/profile-data'); // Rota correta no teu user.js
+                if (!res.ok) throw new Error("Erro ao carregar dados");
+                
+                const user = await res.json();
+                document.getElementById('user-name').value = user.name || "";
+                document.getElementById('user-email').value = user.email || "";
+                document.getElementById('user-number').value = user.number || "";
+                document.getElementById('user-nif').value = user.nif || "";
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // 2. SALVAR DADOS DO PERFIL
+        document.getElementById('profile-form').onsubmit = async (e) => {
+            e.preventDefault();
+
+            const dados = {
+                name: document.getElementById('user-name').value,
+                number: document.getElementById('user-number').value,
+                nif: document.getElementById('user-nif').value,
+                password: document.getElementById('user-pw').value
+            };
+
+            try {
+                const response = await fetch('/users/update-profile', { // Rota correta no teu user.js
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || "Perfil atualizado com sucesso!");
+                    document.getElementById('user-pw').value = ""; 
+                } else {
+                    alert("Erro: " + (result.error || result.message));
+                }
+            } catch (error) {
+                alert("Falha na comunicação com o servidor.");
+            }
+        };
+
+        // 3. LOGICA DO CARRINHO (Sincronizada)
+        function atualizarCarrinhoUI() {
+            const list = document.getElementById('cart-list');
+            const totalDisplay = document.getElementById('total-price');
+            const btn = document.getElementById('btn-finish');
+
+            if (carrinho.length === 0) {
+                list.innerHTML = "<p style='color:#888; text-align:center;'>O teu carrinho está vazio.</p>";
+                totalDisplay.innerText = "0.00€";
+                btn.style.display = "none";
+                return;
+            }
+
+            btn.style.display = "block";
+            let total = 0;
+            list.innerHTML = carrinho.map(item => {
+                total += item.preco * item.qtd;
+                return `
+                    <div class="cart-item">
+                        <div>
+                            <strong>${item.nome}</strong><br>
+                            <small>${item.qtd}x ${item.preco.toFixed(2)}€</small>
+                        </div>
+                        <button onclick="remover(${item.id})" style="border:none; color:red; cursor:pointer; background:none;">Remover</button>
+                    </div>
+                `;
+            }).join('');
+            totalDisplay.innerText = total.toFixed(2) + "€";
+        }
+
+        function remover(id) {
+            carrinho = carrinho.filter(i => i.id !== id);
+            localStorage.setItem('outcast_cart', JSON.stringify(carrinho));
+            atualizarCarrinhoUI();
+        }
+
+        async function finalizarCompra() {
+            if (!confirm("Confirmar compra?")) return;
+
+            try {
+                for (const item of carrinho) {
+                    await fetch(`/api/products/buy/${item.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quantidade: item.qtd })
+                    });
+                }
+                alert("Pedido realizado com sucesso!");
+                carrinho = [];
+                localStorage.removeItem('outcast_cart');
+                window.location.href = "/";
+            } catch (err) {
+                alert("Erro ao processar compra.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcast Skate Shop | Home</title>
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #ff4500;
+            --light: #f4f4f4;
+            --white: #ffffff;
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--light);
+            color: var(--primary);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Sidebar do Carrinho */
+        #cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 320px;
+            height: 100%;
+            background: var(--white);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 15px;
+        }
+
+        #cart-items-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-checkout {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Vistas (Home vs Produto) */
+        .hidden {
+            display: none !important;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1547447134-cd3f5c716030?q=80&w=1964&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Grid de Produtos */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .product-img {
+            height: 200px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        /* Detalhes do Produto (Página única) */
+        .product-page-view {
+            display: flex;
+            gap: 40px;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .large-img-area {
+            flex: 1;
+            font-size: 10rem;
+            background: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            min-height: 400px;
+        }
+
+        .info-area {
+            flex: 1;
+        }
+
+        .btn-buy {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+        }
+
+        .btn-buy:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1 onclick="voltarParaHome()">OUTCAST SKATE SHOP</h1>
+        <nav class="nav-links">
+            <a onclick="voltarParaHome()">Loja</a>
+            <a onclick="toggleCart()">🛒 <span id="cart-count">0</span></a>
+            <span id="auth-links"><a href="/login">Login</a></span>
+        </nav>
+    </header>
+
+    <div id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Teu Carrinho</h3>
+            <span onclick="toggleCart()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
+        </div>
+        <div id="cart-items-list"></div>
+        <div style="border-top: 2px solid #eee; padding-top: 20px;">
+            <p style="display: flex; justify-content: space-between;">Total: <strong id="cart-total">0.00€</strong></p>
+            <button class="btn-checkout" onclick="window.location.href='/client'">FINALIZAR COMPRA</button>
+        </div>
+    </div>
+
+    <section class="hero" id="hero-section">
+        <h2>DOMINA AS RUAS</h2>
+        <p>Equipamento profissional para skaters de verdade.</p>
+    </section>
+
+    <main class="container">
+        <div id="home-view">
+            <h2>Novidades</h2>
+            <div id="products-grid" class="products-grid"></div>
+        </div>
+
+        <div id="product-view" class="hidden">
+            <button onclick="voltarParaHome()"
+                style="border:none; background:none; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom: 20px;">←
+                VOLTAR PARA A LOJA</button>
+            <div id="product-content" class="product-page-view"></div>
+        </div>
+    </main>
+
+    <script>
+        let carrinho = JSON.parse(localStorage.getItem('outcast_cart')) || [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarLoja();
+            verificarAuth();
+            atualizarCarrinhoUI();
+        });
+
+        function carregarLoja() {
+            fetch('/api/products/store/all')
+                .then(res => res.json())
+                .then(products => {
+                    const grid = document.getElementById('products-grid');
+                    grid.innerHTML = products.map(p => `
+                        <div class="product-card" onclick="verDetalhes(${p.idProduct})">
+                            <div class="product-img">🛹</div>
+                            <div class="product-info" style="padding:15px;">
+                                <h3 style="margin:0;">${p.name}</h3>
+                                <p style="color:var(--accent); font-weight:bold;">${p.price.toFixed(2)}€</p>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        // --- ATUALIZAÇÃO DA FUNÇÃO VER DETALHES ---
+        async function verDetalhes(id) {
+            try {
+                const res = await fetch(`/api/products/${id}`);
+                if (!res.ok) throw new Error("Produto não encontrado");
+                const p = await res.json();
+
+                // Tenta buscar dados do utilizador logado para pré-preencher o formulário
+                let userData = { name: '', email: '' };
+                const authRes = await fetch('/api/check-auth');
+                const auth = await authRes.json();
+
+                if (auth.loggedIn) {
+                    const userRes = await fetch('/users/profile-data');
+                    if (userRes.ok) userData = await userRes.json();
+                }
+
+                // Trocar Vistas
+                document.getElementById('home-view').classList.add('hidden');
+                document.getElementById('hero-section').classList.add('hidden');
+                document.getElementById('product-view').classList.remove('hidden');
+
+                document.getElementById('product-content').innerHTML = `
+            <div class="large-img-area">🛹</div>
+            <div class="info-area">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">${p.name}</h1>
+                <p style="color:var(--accent); font-size: 2rem; font-weight:bold; margin-bottom: 20px;">${p.price.toFixed(2)}€</p>
+                
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3>Descrição Técnica</h3>
+                    <p>${p.description || "Material de alta resistência ideal para street e park. Performance garantida pela Outcast."}</p>
+                    <p><small>Stock disponível: ${p.quantity} un.</small></p>
+                </div>
+
+                <button class="btn-buy" style="margin-bottom: 30px;" onclick="adicionarAoCarrinho(${p.idProduct}, '${p.name}', ${p.price}, ${p.quantity})">
+                    ADICIONAR AO CARRINHO
+                </button>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;">
+
+                <div id="contact-section">
+                    <h3>Dúvidas sobre este produto?</h3>
+                    <p>Envia-nos uma mensagem e responderemos o mais breve possível.</p>
+                    <form id="contact-form" onsubmit="enviarContacto(event, ${p.idProduct})">
+                        <input type="text" id="contact-name" placeholder="Teu Nome" required 
+                               value="${userData.name}" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                        
+                        <input type="email" id="contact-email" placeholder="Teu E-mail" required 
+                               value="${userData.email}" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                        
+                        <textarea id="contact-message" placeholder="Qual a tua dúvida sobre o ${p.name}?" required 
+                                  style="width:100%; padding:10px; height:100px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; font-family:inherit;"></textarea>
+                        
+                        <button type="submit" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">
+                            ENVIAR PEDIDO DE INFORMAÇÃO
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+                window.scrollTo(0, 0);
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar detalhes.");
+            }
+        }
+
+        // --- NOVA FUNÇÃO PARA ENVIAR O FORMULÁRIO ---
+        async function enviarContacto(event, idProduct) {
+            event.preventDefault();
+
+            const payload = {
+                idProduct: idProduct,
+                name: document.getElementById('contact-name').value,
+                email: document.getElementById('contact-email').value,
+                message: document.getElementById('contact-message').value
+            };
+
+            try {
+                const res = await fetch('/api/products/contact', { // <--- Caminho ajustado
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Mensagem enviada! O nosso staff entrará em contacto.");
+                    document.getElementById('contact-form').reset();
+                } else {
+                    alert("Erro: " + data.error);
+                }
+            } catch (err) {
+                alert("Falha ao comunicar com o servidor.");
+            }
+        }
+
+        function voltarParaHome() {
+            document.getElementById('home-view').classList.remove('hidden');
+            document.getElementById('hero-section').classList.remove('hidden');
+            document.getElementById('product-view').classList.add('hidden');
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-sidebar').classList.toggle('open');
+        }
+
+        function adicionarAoCarrinho(id, nome, preco, stock) {
+            const item = carrinho.find(i => i.id === id);
+            if (item) {
+                if (item.qtd < stock) item.qtd++;
+                else return alert("Stock máximo atingido!");
+            } else {
+                carrinho.push({ id, nome, preco, qtd: 1 });
+            }
+            localStorage.setItem('outcast_cart', JSON.stringify(carrinho));
+            atualizarCarrinhoUI();
+            if (!document.getElementById('cart-sidebar').classList.contains('open')) toggleCart();
+        }
+
+        function atualizarCarrinhoUI() {
+            const list = document.getElementById('cart-items-list');
+            const total = carrinho.reduce((acc, i) => acc + (i.preco * i.qtd), 0);
+            const count = carrinho.reduce((acc, i) => acc + i.qtd, 0);
+
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-total').innerText = total.toFixed(2) + "€";
+
+            if (carrinho.length === 0) {
+                list.innerHTML = "<p style='text-align:center; color:#999;'>Vazio</p>";
+                return;
+            }
+
+            list.innerHTML = carrinho.map(i => `
+                <div class="cart-item">
+                    <span>${i.nome} (x${i.qtd})</span>
+                    <button onclick="remover(${i.id})" style="border:none; color:red; cursor:pointer;">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function remover(id) {
+            carrinho = carrinho.filter(i => i.id !== id);
+            localStorage.setItem('outcast_cart', JSON.stringify(carrinho));
+            atualizarCarrinhoUI();
+        }
+
+        function verificarAuth() {
+            fetch('/api/check-auth').then(r => r.json()).then(auth => {
+                if (auth.loggedIn) {
+                    const link = auth.role === 'admin' ? '/admin' : '/client';
+                    document.getElementById('auth-links').innerHTML = `<a href="${link}">Minha Conta</a> <a href="/logout" style="color:var(--accent)">Sair</a>`;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
