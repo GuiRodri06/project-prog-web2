@@ -286,14 +286,22 @@
                 });
         }
 
+        // --- ATUALIZAÇÃO DA FUNÇÃO VER DETALHES ---
         async function verDetalhes(id) {
             try {
-                console.log("A buscar produto ID:", id); // Para debug no F12
                 const res = await fetch(`/api/products/${id}`);
-
-                if (!res.ok) throw new Error("Produto não encontrado no servidor");
-
+                if (!res.ok) throw new Error("Produto não encontrado");
                 const p = await res.json();
+
+                // Tenta buscar dados do utilizador logado para pré-preencher o formulário
+                let userData = { name: '', email: '' };
+                const authRes = await fetch('/api/check-auth');
+                const auth = await authRes.json();
+
+                if (auth.loggedIn) {
+                    const userRes = await fetch('/users/profile-data');
+                    if (userRes.ok) userData = await userRes.json();
+                }
 
                 // Trocar Vistas
                 document.getElementById('home-view').classList.add('hidden');
@@ -305,20 +313,73 @@
             <div class="info-area">
                 <h1 style="font-size: 2.5rem; margin-bottom: 10px;">${p.name}</h1>
                 <p style="color:var(--accent); font-size: 2rem; font-weight:bold; margin-bottom: 20px;">${p.price.toFixed(2)}€</p>
-                <p><strong>Stock:</strong> ${p.quantity} unidades disponíveis</p>
-                <div style="margin: 30px 0; line-height: 1.6;">
+                
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <h3>Descrição Técnica</h3>
-                    <p>Material profissional da Outcast Skate Shop. Desenvolvido para máxima durabilidade.</p>
+                    <p>${p.description || "Material de alta resistência ideal para street e park. Performance garantida pela Outcast."}</p>
+                    <p><small>Stock disponível: ${p.quantity} un.</small></p>
                 </div>
-                <button class="btn-buy" onclick="adicionarAoCarrinho(${p.idProduct}, '${p.name}', ${p.price}, ${p.quantity})">
+
+                <button class="btn-buy" style="margin-bottom: 30px;" onclick="adicionarAoCarrinho(${p.idProduct}, '${p.name}', ${p.price}, ${p.quantity})">
                     ADICIONAR AO CARRINHO
                 </button>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;">
+
+                <div id="contact-section">
+                    <h3>Dúvidas sobre este produto?</h3>
+                    <p>Envia-nos uma mensagem e responderemos o mais breve possível.</p>
+                    <form id="contact-form" onsubmit="enviarContacto(event, ${p.idProduct})">
+                        <input type="text" id="contact-name" placeholder="Teu Nome" required 
+                               value="${userData.name}" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                        
+                        <input type="email" id="contact-email" placeholder="Teu E-mail" required 
+                               value="${userData.email}" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                        
+                        <textarea id="contact-message" placeholder="Qual a tua dúvida sobre o ${p.name}?" required 
+                                  style="width:100%; padding:10px; height:100px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; font-family:inherit;"></textarea>
+                        
+                        <button type="submit" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">
+                            ENVIAR PEDIDO DE INFORMAÇÃO
+                        </button>
+                    </form>
+                </div>
             </div>
         `;
                 window.scrollTo(0, 0);
             } catch (err) {
                 console.error(err);
-                alert("Erro ao carregar os detalhes do produto. Verifique a consola (F12).");
+                alert("Erro ao carregar detalhes.");
+            }
+        }
+
+        // --- NOVA FUNÇÃO PARA ENVIAR O FORMULÁRIO ---
+        async function enviarContacto(event, idProduct) {
+            event.preventDefault();
+
+            const payload = {
+                idProduct: idProduct,
+                name: document.getElementById('contact-name').value,
+                email: document.getElementById('contact-email').value,
+                message: document.getElementById('contact-message').value
+            };
+
+            try {
+                const res = await fetch('/api/products/contact', { // <--- Caminho ajustado
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Mensagem enviada! O nosso staff entrará em contacto.");
+                    document.getElementById('contact-form').reset();
+                } else {
+                    alert("Erro: " + data.error);
+                }
+            } catch (err) {
+                alert("Falha ao comunicar com o servidor.");
             }
         }
 

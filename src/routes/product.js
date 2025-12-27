@@ -4,6 +4,7 @@ import db from "../database/database.js";
 import productController from "../controllers/productController.js";
 import { isAdmin } from "../middlewares/authMiddleware.js"; // Importa a proteção
 import ProductModel from "../models/productModel.js";
+import ContactModel from "../models/contactModel.js";
 
 const router = express.Router();
 
@@ -81,6 +82,61 @@ router.put("/:id", isAdmin, async (req, res) => {
         res.json({ message: "Produto e Stock atualizados!" });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+router.post("/contact", async (req, res) => {
+    try {
+        const { name, email, message, idProduct } = req.body;
+        await ContactModel.create({ name, email, message, idProduct });
+        res.json({ message: "Pedido de informação enviado com sucesso!" });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao enviar mensagem." });
+    }
+});
+
+// Esta rota será acessível via GET /api/products/admin/contacts/all
+router.get("/admin/contacts/all", async (req, res) => {
+    try {
+        // Verifica se é admin
+        if (!req.session.user || req.session.user.role !== 'admin') {
+            return res.status(403).json({ error: "Acesso negado" });
+        }
+
+        const messages = await ContactModel.getAll();
+        res.json(messages);
+    } catch (error) {
+        console.error("Erro ao buscar contactos:", error);
+        res.status(500).json({ error: "Erro interno no servidor" });
+    }
+});
+
+// Rota para o formulário de contacto (POST /api/products/contact)
+router.post("/contact", async (req, res) => {
+    try {
+        const { name, email, message, idProduct } = req.body;
+        await ContactModel.create({ name, email, message, idProduct });
+        res.status(201).json({ message: "Mensagem enviada com sucesso!" });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao guardar mensagem." });
+    }
+});
+
+router.delete("/admin/contacts/:id", async (req, res) => {
+    try {
+        if (!req.session.user || req.session.user.role !== 'admin') {
+            return res.status(403).json({ error: "Acesso negado" });
+        }
+        
+        const { id } = req.params;
+        const sql = `DELETE FROM ContactMessage WHERE idMessage = ?`;
+        
+        db.run(sql, [id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: "Mensagem removida com sucesso!" });
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao apagar mensagem" });
     }
 });
 

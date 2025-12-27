@@ -6,7 +6,10 @@ import { isAuthenticated } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // 1. Rota para registrar novo usuário (POST /users/register)
-router.post("/register", userController.register);
+router.post("/register", (req, res, next) => {
+    console.log("Recebido pedido de registo:", req.body);
+    next();
+}, userController.register);
 
 // 2. Rota para buscar os dados completos da BD (Nome, E-mail, NIF, Telemóvel)
 // O client.html chamará: fetch('/users/profile-data')

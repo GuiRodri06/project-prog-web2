@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Contactos | Outcast Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #1a1a1a; color: white; }
+        .product-tag { background: #ff4500; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .date { color: #888; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pedidos de Informação</h1>
+        <a href="/admin">← Voltar ao Painel</a>
+        <table id="messages-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Cliente</th>
+                    <th>Produto</th>
+                    <th>Mensagem</th>
+                </tr>
+            </thead>
+            <tbody id="messages-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        fetch('/api/admin/contacts/all')
+            .then(res => res.json())
+            .then(messages => {
+                const body = document.getElementById('messages-body');
+                if (messages.length === 0) {
+                    body.innerHTML = "<tr><td colspan='4'>Nenhum pedido encontrado.</td></tr>";
+                    return;
+                }
+                body.innerHTML = messages.map(m => `
+                    <tr>
+                        <td class="date">${new Date(m.date).toLocaleString('pt-PT')}</td>
+                        <td><strong>${m.name}</strong><br><small>${m.email}</small></td>
+                        <td><span class="product-tag">${m.productName || 'Geral'}</span></td>
+                        <td>${m.message}</td>
+                    </tr>
+                `).join('');
+            });
+    </script>
+</body>
+</html>

@@ -63,6 +63,22 @@ const createTables = () => {
             () => console.log("Tabela Product verificada/criada.")
         );
 
+        
+        // ------------------------
+        // Tabela CONTACTMESSAGE
+        // ------------------------
+
+        db.run(`CREATE TABLE IF NOT EXISTS ContactMessage (
+                idMessage INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                message TEXT NOT NULL,
+                idProduct INTEGER,
+                date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (idProduct) REFERENCES Product(idProduct)
+            );`
+        );
+
         // ------------------------
         // Tabela STOCK
         // ------------------------
